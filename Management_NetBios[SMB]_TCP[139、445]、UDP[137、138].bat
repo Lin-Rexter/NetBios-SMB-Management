@@ -1,6 +1,6 @@
 set "params=%*" && cd /d "%CD%" && ( if exist "%temp%\getadmin.vbs" del "%temp%\getadmin.vbs" ) && fsutil dirty query %systemdrive% 1>nul 2>nul || (  echo Set UAC = CreateObject^("Shell.Application"^) : UAC.ShellExecute "cmd.exe", "/C cd ""%CD%"" && %~s0 %params%", "", "runas", 1 >>"%temp%\getadmin.vbs" && "%temp%\getadmin.vbs" && exit /B )
 @ECHO OFF
-TITLE TCP_UDP_RDP(Administrator)
+TITLE Close [TCP_139¡B445]¡B[UDP_137¡B138](Administrator)
 
 GOTO MAIN
 
