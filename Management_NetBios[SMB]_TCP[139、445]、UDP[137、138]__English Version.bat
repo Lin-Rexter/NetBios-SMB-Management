@@ -8,17 +8,17 @@ GOTO MAIN
 CLS
 ECHO.
 ECHO ==============================================================
-ECHO                           選擇功能
+ECHO                         Choose Function
 ECHO ==============================================================
 ECHO.
 ECHO --------------------------------------------------------------
-ECHO [1] 更改RDP埠 (Change RDP Port)
-ECHO [2] 管理NetBIOS[SMB] TCP 139、445 (Management NetBIOS[SMB] TCP 139、445)
-ECHO [3] 管理NetBIOS UDP 137、138 (Management NetBIOS[SMB] UDP 137、138)
-ECHO [4] 查看TCP、UDP連接埠 (Check TCP、UDP Port)
+ECHO [1] Change RDP Port
+ECHO [2] Management NetBIOS[SMB] TCP 139、445
+ECHO [3] Management NetBIOS[SMB] UDP 137、138
+ECHO [4] Check TCP、UDP Port
 ECHO --------------------------------------------------------------
 ECHO.
-CHOICE /C 4321 /N /M "選擇功能(Choose Function)[1~4]: "
+CHOICE /C 4321 /N /M "Choose Function[1~4]: "
 IF ERRORLEVEL 4 (
 	GOTO RDP_Info
 )ELSE IF ERRORLEVEL 3 (
@@ -36,9 +36,9 @@ CLS
 ECHO.
 ECHO =======================================================
 ECHO.
-powershell -command '目前RDP的連接埠(Current RDP Port):'+("Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "PortNumber" | Select-Object -ExpandProperty PortNumber")
+powershell -command 'Current RDP Port:'+("Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "PortNumber" | Select-Object -ExpandProperty PortNumber")
 ECHO.
-CHOICE /C NYE /N /M "是否更改連接埠(按下E離開;按下N返回主選單)/Do you Want to Change Port(Press E to Exit; N to Home): "
+CHOICE /C NYE /N /M "Do you Want to Change RDP Port?( [E]Exit [N]Back Menu ): "
 IF ERRORLEVEL 3 (
 	GOTO Exit
 )ELSE IF ERRORLEVEL 2 (
@@ -52,15 +52,15 @@ CLS
 ECHO.
 ECHO =======================================================
 ECHO.
-SET /P RDP-Port="請輸入要將連接埠更改為(按下Enter使用默認埠3389): "
+SET /P RDP-Port="Please Input New Port(Press Enter use Port 3389): "
 IF "%RDP-Port%" EQU "" set rdp_port=3389
 ECHO.
 
 ECHO.
 powershell -command Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "PortNumber" -Value %RDP-Port%
-IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 設置失敗! )ELSE (ECHO. && ECHO 設置成功! )
+IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO Change Success! )ELSE (ECHO. && ECHO Change Fail! )
 ECHO.
-ECHO 設置防火牆規則中...
+ECHO Setting Firewall Rule...
 powershell -command New-NetFirewallRule -DisplayName 'RDPPORTLatest-TCP-In' -Profile 'Public' -Direction Inbound -Action Allow -Protocol TCP -LocalPort %RDP-Port%
 ECHO.
 powershell -command New-NetFirewallRule -DisplayName 'RDPPORTLatest-UDP-In' -Profile 'Public' -Direction Inbound -Action Allow -Protocol UDP -LocalPort %RDP-Port%
@@ -69,9 +69,9 @@ Net stop Termservice
 ECHO.
 Net start Termservice
 ECHO.
-ECHO 更改完畢!
+ECHO Change Finish!
 ECHO.
-powershell -command '目前RDP的連接埠:'+("Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "PortNumber" | Select-Object -ExpandProperty PortNumber")
+powershell -command 'Current RDP Port:'+("Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "PortNumber" | Select-Object -ExpandProperty PortNumber")
 GOTO Exit
 
 ::REM ==================================================Close NetBIOS(SMB)=================================================
@@ -82,25 +82,25 @@ ECHO.
 ECHO =======================================================
 ECHO.
 ECHO ---------------------------------------
-ECHO 目前SMB(139)的連接埠狀態:
+ECHO Current SMB(139) Port State:
 ECHO.
-ECHO  協定    本機位址               外部位址               狀態            PID
+ECHO  Proto   Local address        Foreign address      State           PID
 netstat -ano | findstr LISTEN | findstr 139
-IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 未有連接狀態!)
+IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO No Connection!)
 ECHO.
 
 ECHO ---------------------------------------
-ECHO 目前SMB(445)的連接埠狀態:
+ECHO Current SMB(445) Port State:
 ECHO.
-ECHO  協定    本機位址               外部位址               狀態            PID
+ECHO  Proto   Local address        Foreign address      State           PID
 netstat -ano | findstr LISTEN | findstr 445
-IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 未有連接狀態! && GOTO Switch_SMB)
+IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO No Connection! && GOTO Switch_SMB)
 
 :Switch_SMB
 ECHO.
 ECHO =======================================================
 ECHO.
-CHOICE /C 321 /N /M "[1]關閉SMB連接埠 [2]開啟SMB連接埠 [3]返回主選單: "
+CHOICE /C 321 /N /M "[1]Close SMB Port [2]Open SMB Port [3]Back Menu: "
 IF ERRORLEVEL 3 (
 	GOTO Close_SMB
 )ELSE IF ERRORLEVEL 2 (
@@ -119,9 +119,9 @@ ECHO.
 ECHO ---------------------------------------
 ECHO ---------------【NetBios】---------------
 ECHO ---------------------------------------
-ECHO 關閉NetBios功能中...
+ECHO Close NetBios...
 powershell -command $base = 'HKLM:SYSTEM\CurrentControlSet\Services\NetBT\Parameters\Interfaces' ; $interfaces = Get-ChildItem $base ^| Select -ExpandProperty PSChildName ; foreach($interface in $interfaces) {Set-ItemProperty -Path "$base\$interface" -Name "NetbiosOptions" -Value 2}
-IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 關閉失敗!)ELSE (ECHO. && ECHO 關閉成功)
+IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO Close Fail!)ELSE (ECHO. && ECHO Close Success!)
 
 ::REM ========================================Close Port_139======================================
 
@@ -129,89 +129,97 @@ ECHO.
 ECHO ---------------------------------------
 ECHO --------------【Port 139】---------------
 ECHO ---------------------------------------
-CALL :Is_Exist_139_Entries_RA REM 檢查註冊表Restrictanonymous項目是否存在
+CALL :Is_Exist_139_Entries_RA REM Check Reg Entries[Restrictanonymous] Exist
 IF %ERRORLEVEL% NEQ 0 (
 	SET ERRORLEVEL=
 )ELSE (
 	ECHO.
-	ECHO 設置註冊表限制匿名存取中...
+	ECHO Setting Registry[Restrict anonymous access]...
 	ECHO.
 	powershell -command Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" -Name "restrictanonymous" -Value "2"
-	IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 設置失敗!)ELSE (ECHO. && ECHO 設置成功!)
+	IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO Setting Fail!)ELSE (ECHO. && ECHO Setting Success!)
 )
 
 ECHO.
-ECHO 關閉TCP/IP NetBIOS Helper服務中...
+ECHO [1/2]Close TCP/IP NetBIOS Helper Service...
 ECHO.
 sc stop lmhosts
 IF %ERRORLEVEL% == 1062 (
 	ECHO.
-	ECHO 服務已經關閉!
+	ECHO Service is Closed!
 )ELSE IF %ERRORLEVEL% == 1052 (
 	ECHO.
-	ECHO 服務已經關閉，因為服務已設置停用中!
+	ECHO Service is Closed!
 )ELSE IF %ERRORLEVEL% == 0 (
 	ECHO.
-	ECHO 關閉服務成功!
+	ECHO Close Service Success! 
 )ELSE (
 	ECHO.
-	ECHO 無法關閉服務!
+	ECHO Close Service Fail!
 )
 
 ECHO.
-ECHO 將TCP/IP NetBIOS Helper服務設置手動中...
+ECHO [2/2]Close TCP/IP NetBIOS Helper Service...
 ECHO.
-sc config lmhosts start=demand
-IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 設置失敗!)ELSE (ECHO. && ECHO 設置成功!)
+sc config lmhosts start=disabled
+IF %ERRORLEVEL% NEQ 0 (
+	ECHO. && ECHO Setting Fail!
+)ELSE (
+	ECHO. && ECHO Setting Success!
+)
 ECHO.
 
-ECHO 關閉NetBios服務中...
+ECHO [1/2]Close NetBios Service...
 ECHO.
 sc stop netbios
 IF %ERRORLEVEL% == 1062 (
 	ECHO.
-	ECHO 服務已經關閉!
+	ECHO Service is Closed!
 )ELSE IF %ERRORLEVEL% == 1052 (
 	ECHO.
-	ECHO 服務已經關閉，因為服務已設置停用中!
+	ECHO Service is Closed!
 )ELSE IF %ERRORLEVEL% == 0 (
 	ECHO.
-	ECHO 關閉服務成功!
+	ECHO Close Service Success! 
 )ELSE (
 	ECHO.
-	ECHO 無法關閉服務!
+	ECHO Close Service Fail!
 )
 
 ECHO.
-ECHO 將NetBios服務類型設置停用中...
+ECHO [2/2]Close NetBios Service...
 ECHO.
 sc config netbios start=disabled
-IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 設置失敗!)ELSE (ECHO. && ECHO 設置成功!)
+IF %ERRORLEVEL% NEQ 0 (
+	ECHO. && ECHO Close Fail!
+)ELSE (
+	ECHO. && ECHO Close Success!
+)
 ECHO.
 
-CALL :Is_Exist_139_Entries_ShareServer REM 檢查註冊表AutoShareServer項目是否存在
+CALL :Is_Exist_139_Entries_ShareServer REM Check Reg Entries[AutoShareServer] Exist
 IF %ERRORLEVEL% NEQ 0 (
 	SET ERRORLEVEL=
 )ELSE (
 	ECHO.
-	ECHO 設置註冊表停止系統磁碟分享中...
+	ECHO Disable System Disk Sharing...
 	ECHO.
 	powershell -command Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "AutoShareServer" -Value "0"
-	IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 設置失敗!)ELSE (ECHO. && ECHO 設置成功!)
+	IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO Setting Fail!)ELSE (ECHO. && ECHO Setting Success!)
 )
 
-CALL :Is_Exist_139_Entries_ShareWks REM 檢查註冊表AutoShareWks項目是否存在
+CALL :Is_Exist_139_Entries_ShareWks REM Check Reg Entries[AutoShareWks] Exist
 IF %ERRORLEVEL% NEQ 0 (
 	SET ERRORLEVEL=
 )ELSE (
 	ECHO.
-	ECHO 設置註冊表停止系統資料夾分享中...
+	ECHO Disable System Folder Sharing...
 	ECHO.
 	powershell -command Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "AutoShareWks" -Value "0"
-	IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 設置失敗!)ELSE (ECHO. && ECHO 設置成功!)
+	IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO Setting Fail!)ELSE (ECHO. && ECHO Setting Success!)
 )
 
-ECHO 設置防火牆阻擋139輸入規則中...
+ECHO Setting Firewall Rule[Block Inbound Port 139]...
 ECHO.
 powershell -command New-NetFirewallRule -DisplayName "Block_TCP-139" -Direction Inbound -LocalPort 139 -Protocol TCP -Action Block
 IF %ERRORLEVEL% NEQ 0 (
@@ -220,12 +228,12 @@ IF %ERRORLEVEL% NEQ 0 (
 	IF %ERRORLEVEL% NEQ 0 (
 		ECHO.
 		netsh firewall set portopening protocol=tcp port=139 mode=disable name="Block_TCP-139"
-		IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 設置失敗! )ELSE (ECHO. && ECHO 設置成功! )
+		IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO Setting Fail! )ELSE (ECHO. && ECHO Setting Success! )
 	)ELSE (
-		ECHO. && ECHO 設置成功! 
+		ECHO. && ECHO Setting Success!
 	)
 )ELSE (
-	ECHO. && ECHO 設置成功! 
+	ECHO. && ECHO Setting Success!
 )
 
 ::REM ========================================Close Port_445======================================
@@ -234,53 +242,57 @@ ECHO.
 ECHO ---------------------------------------
 ECHO --------------【Port 445】---------------
 ECHO ---------------------------------------
-CALL :Is_Exist_445_Entries_SMBD REM 檢查註冊表SMBDeviceEnabled項目是否存在
+CALL :Is_Exist_445_Entries_SMBD REM Check Reg Entries[SMBDeviceEnabled] Exist
 IF %ERRORLEVEL% NEQ 0 (
 	SET ERRORLEVEL=
 )ELSE (
 	ECHO.
-	ECHO 關閉註冊表項目SMBDeviceEnabled值中...
+	ECHO Disable Reg Entries SMBDeviceEnabled Value...
 	ECHO.
 	powershell -command Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\NetBT\Parameters" -Name "SMBDeviceEnabled" -Value "0"
-	IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 關閉失敗! && ECHO.)ELSE (ECHO. && ECHO 關閉成功! && ECHO.)
+	IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO Disable Fail! && ECHO.)ELSE (ECHO. && ECHO Disable Success! && ECHO.)
 )
 
-CALL :Is_Exist_445_Entries_TB REM 檢查註冊表TransportBindName項目是否存在
+CALL :Is_Exist_445_Entries_TB REM Check Reg Entries[TransportBindName] Exist
 IF %ERRORLEVEL% NEQ 0 (
 	SET ERRORLEVEL=
 )ELSE (
 	ECHO.
-	ECHO 清空註冊表項目TransportBindName值中...
+	ECHO Clear Reg Entries TransportBindName Value...
 	ECHO.
 	powershell -command Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\NetBT\Parameters" -Name "TransportBindName" -Value "$null"
-	IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 清空失敗! && ECHO.)ELSE (ECHO. && ECHO 清空成功! && ECHO.)
+	IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO Clear Fail! && ECHO.)ELSE (ECHO. && ECHO Clear Success! && ECHO.)
 )
 
-ECHO 關閉lanmanserver服務中...
+ECHO [1/2]Close lanmanserver Service...
 ECHO.
 sc stop lanmanserver
 IF %ERRORLEVEL% == 1062 (
 	ECHO.
-	ECHO 服務已經關閉!
+	ECHO Service is Closed!
 )ELSE IF %ERRORLEVEL% == 1052 (
 	ECHO.
-	ECHO 服務已經關閉，因為服務已設置停用中!
+	ECHO Service is Closed!
 )ELSE IF %ERRORLEVEL% == 0 (
 	ECHO.
-	ECHO 關閉服務成功!
+	ECHO Close Service Success!
 )ELSE (
 	ECHO.
-	ECHO 無法關閉服務!
+	ECHO Close Service Fail!
 )
 
 ECHO.
-ECHO 將lanmanserver服務設置停用中...
+ECHO [2/2]Close lanmanserver Service...
 ECHO.
 sc config lanmanserver start=disabled
-IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 無法關閉服務!)ELSE (ECHO. && ECHO 關閉服務成功!)
+IF %ERRORLEVEL% NEQ 0 (
+	ECHO. && ECHO Close Fail!
+)ELSE (
+	ECHO. && ECHO Close Success!
+)
 
 ECHO.
-ECHO 設置防火牆阻擋445輸入規則中...
+ECHO Setting Firewall Rule[Block Inbound Port 445]...
 ECHO.
 powershell -command New-NetFirewallRule -DisplayName "Block_TCP-445" -Direction Inbound -LocalPort 445 -Protocol TCP -Action Block
 IF %ERRORLEVEL% NEQ 0 (
@@ -289,12 +301,12 @@ IF %ERRORLEVEL% NEQ 0 (
 	IF %ERRORLEVEL% NEQ 0 (
 		ECHO.
 		netsh firewall set portopening protocol=tcp port=445 mode=disable name="Block_TCP-445"
-		IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 設置失敗!)ELSE (ECHO. && ECHO 設置成功!)
+		IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO Setting Fail! )ELSE (ECHO. && ECHO Setting Success! )
 	)ELSE (
-		ECHO. && ECHO 設置成功! 
+		ECHO. && ECHO Setting Success!
 	)
 )ELSE (
-	ECHO. && ECHO 設置成功! 
+	ECHO. && ECHO Setting Success!
 )
 ECHO.
 PAUSE
@@ -312,9 +324,9 @@ ECHO.
 ECHO ---------------------------------------
 ECHO ---------------【NetBios】---------------
 ECHO ---------------------------------------
-ECHO 開啟NetBios功能中...
+ECHO Open NetBios...
 powershell -command $base = 'HKLM:SYSTEM\CurrentControlSet\Services\NetBT\Parameters\Interfaces' ; $interfaces = Get-ChildItem $base ^| Select -ExpandProperty PSChildName ; foreach($interface in $interfaces) {Set-ItemProperty -Path "$base\$interface" -Name "NetbiosOptions" -Value 0}
-IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 開啟失敗!)ELSE (ECHO. && ECHO 開啟成功)
+IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO Open Fail!)ELSE (ECHO. && ECHO Open Success!)
 
 ::REM ========================================Open Port_139=======================================
 
@@ -322,88 +334,97 @@ ECHO.
 ECHO ---------------------------------------
 ECHO --------------【Port 139】---------------
 ECHO ---------------------------------------
-CALL :Is_Exist_139_Entries_RA REM 檢查註冊表Restrictanonymous項目是否存在
+CALL :Is_Exist_139_Entries_RA REM Check Reg Entries[Restrictanonymous] Exist
 IF %ERRORLEVEL% NEQ 0 (
 	SET ERRORLEVEL=
 )ELSE (
 	ECHO.
-	ECHO 設置註冊表限制匿名存取中...
+	ECHO Setting Registry[Restrict anonymous access]...
 	ECHO.
 	powershell -command Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" -Name "restrictanonymous" -Value "0"
-	IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 設置失敗!)ELSE (ECHO. && ECHO 設置成功!)
+	IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO Setting Fail!)ELSE (ECHO. && ECHO Setting Success!)
 )
 ECHO.
-ECHO 將TCP/IP NetBIOS Helper服務設置手動中...
+ECHO [1/2]Open TCP/IP NetBIOS Helper Service...
 ECHO.
 sc config lmhosts start=demand
-IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 設置失敗!)ELSE (ECHO. && ECHO 設置成功!)
+IF %ERRORLEVEL% NEQ 0 (
+	ECHO. && ECHO Setting Fail!
+)ELSE (
+	ECHO. && ECHO Setting Success!
+)
 
 ECHO.
-ECHO 開啟TCP/IP NetBIOS Helper服務中...
+ECHO [2/2]Open TCP/IP NetBIOS Helper Service...
 ECHO.
 sc start lmhosts
 IF %ERRORLEVEL% == 1062 (
 	ECHO.
-	ECHO 服務已經開啟!
+	ECHO Service is Opened!
 )ELSE IF %ERRORLEVEL% == 1052 (
 	ECHO.
-	ECHO 服務已經開啟，因為服務已設置手動中!
+	ECHO Service is Opened!
 )ELSE IF %ERRORLEVEL% == 0 (
 	ECHO.
-	ECHO 開啟服務成功!
+	ECHO Open Service Success! 
 )ELSE (
 	ECHO.
-	ECHO 無法開啟服務!
+	ECHO Open Service Fail!
 )
 
 ECHO.
-ECHO 將NetBios服務類型設置開啟中...
+ECHO [1/2]Open NetBios Service...
 ECHO.
 sc config netbios start=auto
-IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 設置失敗!)ELSE (ECHO. && ECHO 設置成功!)
+IF %ERRORLEVEL% NEQ 0 (
+	ECHO. && ECHO Open Fail!
+)ELSE (
+	ECHO. && ECHO Open Success!
+)
 
 ECHO.
-ECHO 開啟NetBios服務中...
+ECHO [1/2]Open NetBios Service...
 ECHO.
 sc start netbios
 IF %ERRORLEVEL% == 1062 (
 	ECHO.
-	ECHO 服務已經開啟!
+	ECHO Service is Opened!
 )ELSE IF %ERRORLEVEL% == 1052 (
 	ECHO.
-	ECHO 服務已經開啟，因為服務已設置開啟中!
+	ECHO Service is Opened!
 )ELSE IF %ERRORLEVEL% == 0 (
 	ECHO.
-	ECHO 開啟服務成功!
+	ECHO Open Service Success! 
 )ELSE (
 	ECHO.
-	ECHO 無法開啟服務!
+	ECHO Open Service Fail!
 )
+
 ECHO.
 
-CALL :Is_Exist_139_Entries_ShareServer REM 檢查註冊表AutoShareServer項目是否存在
+CALL :Is_Exist_139_Entries_ShareServer REM Check Reg Entries[AutoShareServer] Exist
 IF %ERRORLEVEL% NEQ 0 (
 	SET ERRORLEVEL=
 )ELSE (
 	ECHO.
-	ECHO 設置註冊表啟用系統磁碟分享中...
+	ECHO Enable System Disk Sharing...
 	ECHO.
 	powershell -command Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "AutoShareServer" -Value "1"
-	IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 設置失敗!)ELSE (ECHO. && ECHO 設置成功!)
+	IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO Setting Fail!)ELSE (ECHO. && ECHO Setting Success!)
 )
 
-CALL :Is_Exist_139_Entries_ShareWks REM 檢查註冊表AutoShareWks項目是否存在
+CALL :Is_Exist_139_Entries_ShareWks REM Check Reg Entries[AutoShareWks] Exist
 IF %ERRORLEVEL% NEQ 0 (
 	SET ERRORLEVEL=
 )ELSE (
 	ECHO.
-	ECHO 設置註冊表啟用系統資料夾分享中...
+	ECHO Enable System Folder Sharing...
 	ECHO.
 	powershell -command Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "AutoShareWks" -Value "1"
-	IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 設置失敗!)ELSE (ECHO. && ECHO 設置成功!)
+	IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO Setting Fail!)ELSE (ECHO. && ECHO Setting Success!)
 )
 
-ECHO 移除防火牆阻擋139輸入規則中...
+ECHO Remove Firewall Rule[Block Inbound Port 139]...
 ECHO.
 powershell -command Remove-NetFirewallRule -DisplayName "Block_TCP-139"
 IF %ERRORLEVEL% NEQ 0 (
@@ -412,12 +433,12 @@ IF %ERRORLEVEL% NEQ 0 (
 	IF %ERRORLEVEL% NEQ 0 (
 		ECHO.
 		netsh firewall delete portopening protocol=tcp port=139
-		IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 設置失敗! )ELSE (ECHO. && ECHO 設置成功! )
+		IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO Setting Fail! )ELSE (ECHO. && ECHO Setting Success! )
 	)ELSE (
-		ECHO. && ECHO 設置成功!
+		ECHO. && ECHO Setting Success!
 	)
 )ELSE (
-	ECHO. && ECHO 設置成功!
+	ECHO. && ECHO Setting Success!
 )
 
 ::REM ========================================Open Port_445=======================================
@@ -426,54 +447,58 @@ ECHO.
 ECHO ---------------------------------------
 ECHO --------------【Port 445】---------------
 ECHO ---------------------------------------
-CALL :Is_Exist_445_Entries_SMBD REM 檢查註冊表SMBDeviceEnabled項目是否存在
+CALL :Is_Exist_445_Entries_SMBD REM Check Reg Entries[SMBDeviceEnabled] Exist
 IF %ERRORLEVEL% NEQ 0 (
 	SET ERRORLEVEL=
 )ELSE (
 	ECHO.
-	ECHO 開啟註冊表項目SMBDeviceEnabled值中...
+	ECHO Enable Reg Entries SMBDeviceEnabled Value...
 	ECHO.
 	powershell -command Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\NetBT\Parameters" -Name "SMBDeviceEnabled" -Value "1"
-	IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 開啟失敗! && ECHO.)ELSE (ECHO. && ECHO 開啟成功! && ECHO.)
+	IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO Setting Fail! && ECHO.)ELSE (ECHO. && ECHO Setting Success! && ECHO.)
 )
 
-CALL :Is_Exist_445_Entries_TB REM 檢查註冊表TransportBindName項目是否存在
+CALL :Is_Exist_445_Entries_TB REM Check Reg Entries[TransportBindName] Exist
 IF %ERRORLEVEL% NEQ 0 (
 	SET ERRORLEVEL=
 )ELSE (
 	ECHO.
-	ECHO 設置註冊表項目TransportBindName值中...
+	ECHO Setting Reg Entries TransportBindName Value...
 	ECHO.
 	powershell -command Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\NetBT\Parameters" -Name "TransportBindName" -Value "\Device\"
-	IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 設置失敗! && ECHO.)ELSE (ECHO. && ECHO 設置成功! && ECHO.)
+	IIF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO Setting Fail! && ECHO.)ELSE (ECHO. && ECHO Setting Success! && ECHO.)
 )
 
 ECHO.
-ECHO 將lanmanserver服務設置啟用中...
+ECHO [1/2]Open lanmanserver Service...
 ECHO.
 sc config lanmanserver start=auto
-IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 無法開啟服務!)ELSE (ECHO. && ECHO 開啟服務成功!)
+IF %ERRORLEVEL% NEQ 0 (
+	ECHO. && ECHO Open Fail!
+)ELSE (
+	ECHO. && ECHO Open Success!
+)
 
 ECHO.
-ECHO 開啟lanmanserver服務中...
+ECHO [2/2]Open lanmanserver Service...
 ECHO.
 sc start lanmanserver
 IF %ERRORLEVEL% == 1062 (
 	ECHO.
-	ECHO 服務已經開啟!
+	ECHO Service is Opened!
 )ELSE IF %ERRORLEVEL% == 1052 (
 	ECHO.
-	ECHO 服務已經開啟，因為服務已設置開啟中!
+	ECHO Service is Opened!
 )ELSE IF %ERRORLEVEL% == 0 (
 	ECHO.
-	ECHO 開啟服務成功!
+	ECHO Open Service Success!
 )ELSE (
 	ECHO.
-	ECHO 無法開啟服務!
+	ECHO Open Service Fail!
 )
 
 ECHO.
-ECHO 移除防火牆阻擋445輸入規則中...
+ECHO Remove Firewall Rule[Block Inbound Port 445]...
 ECHO.
 powershell -command Remove-NetFirewallRule -DisplayName "Block_TCP-445"
 IF %ERRORLEVEL% NEQ 0 (
@@ -482,87 +507,87 @@ IF %ERRORLEVEL% NEQ 0 (
 	IF %ERRORLEVEL% NEQ 0 (
 		ECHO.
 		netsh firewall delete portopening protocol=tcp port=445
-		IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 設置失敗!)ELSE (ECHO. && ECHO 設置成功!)	
+		IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO Setting Fail! )ELSE (ECHO. && ECHO Setting Success! )
 	)ELSE (
-		ECHO. && ECHO 設置成功! 
+		ECHO. && ECHO Setting Success!
 	)
 )ELSE (
-	ECHO. && ECHO 設置成功! 
+	ECHO. && ECHO Setting Success!
 )
 ECHO.
 PAUSE
 GOTO MAIN
 
 :Is_Exist_139_Entries_RA
-ECHO 檢查註冊表RestrictAnonymous項目中...
+ECHO Check Reg Entries[Restrictanonymous] Exist...
 powershell -command Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Lsa' -name "restrictanonymous" ^| findstr restrictanonymous > nul 2>&1
-IF %ERRORLEVEL% NEQ 0 (GOTO Create_139_Entries_RA)ELSE (ECHO 確認存在RestrictAnonymous項目!)
+IF %ERRORLEVEL% NEQ 0 (GOTO Create_139_Entries_RA)ELSE (ECHO Confirm RestrictAnonymous is Exist!)
 EXIT /B
 
 :Is_Exist_139_Entries_ShareServer
-ECHO 檢查註冊表AutoShareServer項目中...
+ECHO Check Reg Entries[AutoShareServer] Exist...
 powershell -command Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters' -name "AutoShareServer" ^| findstr AutoShareServer > nul 2>&1
-IF %ERRORLEVEL% NEQ 0 (GOTO Create_139_Entries_ShareServer)ELSE (ECHO 確認存在AutoShareServer項目!)
+IF %ERRORLEVEL% NEQ 0 (GOTO Create_139_Entries_ShareServer)ELSE (ECHO Confirm AutoShareServer is Exist!)
 EXIT /B
 
 :Is_Exist_139_Entries_ShareWks
-ECHO 檢查註冊表AutoShareWks項目中...
+ECHO Check Reg Entries[AutoShareWks] Exist...
 powershell -command Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters' -name "AutoShareWks" ^| findstr AutoShareWks > nul 2>&1
-IF %ERRORLEVEL% NEQ 0 (GOTO Create_139_Entries_ShareWks)ELSE (ECHO 確認存在AutoShareWks項目!)
+IF %ERRORLEVEL% NEQ 0 (GOTO Create_139_Entries_ShareWks)ELSE (ECHO Confirm AutoShareWks is Exist!)
 EXIT /B
 
 :Is_Exist_445_Entries_SMBD
-ECHO 檢查註冊表SMBDeviceEnabled項目中...
+ECHO Check Reg Entries[SMBDeviceEnabled] Exist...
 powershell -command Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\NetBT\Parameters' -name "SMBDeviceEnabled" ^| findstr SMBDeviceEnabled > nul 2>&1
-IF %ERRORLEVEL% NEQ 0 (GOTO Create_445_Entries_SMBD)ELSE (ECHO 確認存在SMBDeviceEnabled項目!)
+IF %ERRORLEVEL% NEQ 0 (GOTO Create_445_Entries_SMBD)ELSE (ECHO Confirm SMBDeviceEnabled is Exist!)
 EXIT /B
 
 :Is_Exist_445_Entries_TB
-ECHO 檢查註冊表TransportBindName項目中...
+ECHO Check Reg Entries[TransportBindName] Exist...
 powershell -command Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\NetBT\Parameters' -name "TransportBindName" ^| findstr TransportBindName > nul 2>&1
-IF %ERRORLEVEL% NEQ 0 (GOTO Create_445_Entries_TB)ELSE (ECHO 確認存在TransportBindName項目!)
+IF %ERRORLEVEL% NEQ 0 (GOTO Create_445_Entries_TB)ELSE (ECHO Confirm TransportBindName is Exist!)
 EXIT /B
 
 :Create_139_Entries_RA
 ECHO.
-ECHO 不存在Restrictanonymous項目，創建中...
+ECHO Reg Entries[Restrictanonymous] is not exist，Creating...
 ECHO.
 powershell -command New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" -Name "restrictanonymous" -PropertyType "DWORD" -Value "0"
-IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 創建失敗，無法設置註冊表限制匿名存取! && SET ERRORLEVEL=1)ELSE (ECHO. && ECHO 創建成功!)
+IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO Create Fail，Can't Setting Entries[Restrictanonymous]! && SET ERRORLEVEL=1)ELSE (ECHO. && ECHO Create Success!)
 EXIT /B
 
 :Create_139_Entries_ShareServer
 ECHO.
-ECHO 不存在AutoShareServer項目，創建中...
+ECHO Reg Entries[AutoShareServer] is not exist，Creating...
 ECHO.
 powershell -command New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "AutoShareServer" -PropertyType "DWORD" -Value "0"
-IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 創建失敗，無法設置註冊表系統磁碟分享! && SET ERRORLEVEL=1)ELSE (ECHO. && ECHO 創建成功!)
+IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO Create Fail，Can't Setting System Disk Share! && SET ERRORLEVEL=1)ELSE (ECHO. && ECHO Create Success!)
 EXIT /B
 
 :Create_139_Entries_ShareWks
 ECHO.
-ECHO 不存在AutoShareWks項目，創建中...
+ECHO Reg Entries[AutoShareWks] is not exist，Creating...
 ECHO.
 powershell -command New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -Name "AutoShareWks" -PropertyType "DWORD" -Value "0"
-IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 創建失敗，無法設置註冊表系統資料夾分享! && SET ERRORLEVEL=1)ELSE (ECHO. && ECHO 創建成功!)
+IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO Create Fail，Can't Setting System Folder Share! && SET ERRORLEVEL=1)ELSE (ECHO. && ECHO Create Success!)
 EXIT /B
 
 :Create_445_Entries_SMBD
 ECHO.
-ECHO 不存在SMBDeviceEnabled項目，創建中...
+ECHO Reg Entries[SMBDeviceEnabled] is not exist，Creating...
 ECHO.
 CALL :Check_OS
 IF %OS_Type% == x64 (SET REG_WORD=QWORD)ELSE (SET REG_WORD=DWORD)
 powershell -command New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\NetBT\Parameters" -Name "SMBDeviceEnabled" -PropertyType "%REG_WORD%" -Value "1"
-IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 創建失敗，無法設置註冊表項目SMBDeviceEnabled值! && SET ERRORLEVEL=1)ELSE (ECHO. && ECHO 創建成功!)
+IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO Create Fail，Can't Setting Entries[SMBDeviceEnabled]! && SET ERRORLEVEL=1)ELSE (ECHO. && ECHO Create Success!)
 EXIT /B
 
 :Create_445_Entries_TB
 ECHO.
-ECHO 不存在TransportBindName項目，創建中...
+ECHO Reg Entries[TransportBindName] is not exist，Creating...
 ECHO.
-powershell -command New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\NetBT\Parameters" -Name "TransportBindName" -PropertyType "String" -Value "1"
-IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 創建失敗，無法設置註冊表項目TransportBindName值! && SET ERRORLEVEL=1)ELSE (ECHO. && ECHO 創建成功!)
+powershell -command New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\NetBT\Parameters" -Name "TransportBindName" -PropertyType "String" -Value "1" 
+IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO Create Fail，Can't Setting Entries[TransportBindName]! && SET ERRORLEVEL=1)ELSE (ECHO. && ECHO Create Success!)
 EXIT /B
 
 :Check_OS
@@ -581,25 +606,24 @@ ECHO.
 ECHO =======================================================
 ECHO.
 ECHO ---------------------------------------
-ECHO 目前SMB(137)的連接埠狀態:
+ECHO Current SMB(137) Port Connection State:
 ECHO.
-ECHO  協定    本機位址               外部位址               狀態            PID
+ECHO  Proto   Local address        Foreign address      State           PID
 netstat -ano | findstr LISTEN | findstr 137
-IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 未有連接狀態!)
+IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO No Connection!)
 ECHO.
 
 ECHO ---------------------------------------
-ECHO 目前SMB(138)的連接埠狀態:
+ECHO Current SMB(138) Port Connection State:
 ECHO.
-ECHO  協定    本機位址               外部位址               狀態            PID
+ECHO  Proto   Local address        Foreign address      State           PID
 netstat -ano | findstr LISTEN | findstr 138
-IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 未有連接狀態! && GOTO Switch_UDP)
-
+IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO No Connection! && GOTO Switch_UDP)
 :Switch_UDP
 ECHO.
 ECHO =======================================================
 ECHO.
-CHOICE /C 321 /N /M "[1]關閉UDP(137~8)連接埠 [2]開啟UDP(137~8)連接埠 [3]返回主選單: "
+CHOICE /C 321 /N /M "[1]Close UDP(137~8) Port [2]Open UDP(137~8) Port [3]Back Menu: "
 IF ERRORLEVEL 3 (
 	GOTO Close_NetBIOS_UDP_137
 )ELSE IF ERRORLEVEL 2 (
@@ -616,14 +640,14 @@ ECHO.
 ECHO ---------------------------------------
 ECHO --------------【Port 137】---------------
 ECHO ---------------------------------------
-CALL :Is_Exist_Port_137 REM 檢查防火牆是否已有設置Port 137規則中
+CALL :Is_Exist_Port_137 REM Check Firewall Rule[Block Inbound Port 137] Exist
 IF %ERRORLEVEL% NEQ 0 (
 	SET ERRORLEVEL=
 )ELSE (
 	GOTO Close_NetBIOS_UDP_138
 )
 ECHO.
-ECHO 設置防火牆阻擋137輸入規則中...
+ECHO Setting Firewall Rule[Block Inbound Port 137]...
 ECHO.
 powershell -command New-NetFirewallRule -DisplayName "Block_UDP-137" -Direction Inbound -LocalPort 137 -Protocol UDP -Action Block
 IF %ERRORLEVEL% NEQ 0 (
@@ -632,12 +656,12 @@ IF %ERRORLEVEL% NEQ 0 (
 	IF %ERRORLEVEL% NEQ 0 (
 		ECHO.
 		netsh firewall set portopening protocol=udp port=137 mode=disable name="Block_UDP-137"
-		IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 設置失敗!)ELSE (ECHO. && ECHO 設置成功!)
+		IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO Setting Fail!)ELSE (ECHO. && ECHO Setting Success!)
 	)ELSE (
-		ECHO. && ECHO 設置成功!
+		ECHO. && ECHO Setting Success!
 	)
 )ELSE (
-	ECHO. && ECHO 設置成功!
+	ECHO. && ECHO Setting Success!
 )
 
 :Close_NetBIOS_UDP_138
@@ -645,7 +669,7 @@ ECHO.
 ECHO ---------------------------------------
 ECHO --------------【Port 138】---------------
 ECHO ---------------------------------------
-CALL :Is_Exist_Port_138 REM 檢查防火牆是否已有設置Port 138規則中
+CALL :Is_Exist_Port_138 REM Check Firewall Rule[Block Inbound Port 138] Exist
 IF %ERRORLEVEL% NEQ 0 (
 	SET ERRORLEVEL=
 )ELSE (
@@ -654,7 +678,7 @@ IF %ERRORLEVEL% NEQ 0 (
 	GOTO MAIN
 )
 ECHO.
-ECHO 設置防火牆阻擋138輸入規則中...
+ECHO Setting Firewall Rule[Block Inbound Port 138]...
 ECHO.
 powershell -command New-NetFirewallRule -DisplayName "Block_UDP-138" -Direction Inbound -LocalPort 138 -Protocol UDP -Action Block
 IF %ERRORLEVEL% NEQ 0 (
@@ -663,12 +687,12 @@ IF %ERRORLEVEL% NEQ 0 (
 	IF %ERRORLEVEL% NEQ 0 (
 		ECHO.
 		netsh firewall set portopening protocol=udp port=138 mode=disable name="Block_UDP-138"
-		IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 設置失敗!)ELSE (ECHO. && ECHO 設置成功!)
+		IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO Setting Fail!)ELSE (ECHO. && ECHO Setting Success!)
 	)ELSE (
-		ECHO. && ECHO 設置成功!
+		ECHO. && ECHO Setting Success!
 	)
 )ELSE (
-	ECHO. && ECHO 設置成功!
+	ECHO. && ECHO Setting Success!
 )
 ECHO.
 PAUSE
@@ -682,14 +706,14 @@ ECHO.
 ECHO ---------------------------------------
 ECHO --------------【Port 137】---------------
 ECHO ---------------------------------------
-CALL :Is_Exist_Port_137 REM 檢查防火牆是否已有設置Port 137規則中
+CALL :Is_Exist_Port_137 REM Check Firewall Rule[Block Inbound Port 137] Exist
 IF %ERRORLEVEL% NEQ 0 (
 	GOTO Open_NetBIOS_UDP_138
 )ELSE (
 	SET ERRORLEVEL=
 )
 ECHO.
-ECHO 移除防火牆阻擋137輸入規則中...
+ECHO Remove Firewall Rule[Block Inbound Port 137]...
 ECHO.
 powershell -command Remove-NetFirewallRule -DisplayName "Block_UDP-137"
 IF %ERRORLEVEL% NEQ 0 (
@@ -698,12 +722,12 @@ IF %ERRORLEVEL% NEQ 0 (
 	IF %ERRORLEVEL% NEQ 0 (
 		ECHO.
 		netsh firewall delete portopening protocol=udp port=137
-		IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 設置失敗!)ELSE (ECHO. && ECHO 設置成功!)
+		IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO Setting Fail!)ELSE (ECHO. && ECHO Setting Success!)
 	)ELSE (
-		ECHO. && ECHO 設置成功!
+		ECHO. && ECHO Setting Success!
 	)
 )ELSE (
-	ECHO. && ECHO 設置成功!
+	ECHO. && ECHO Setting Success!
 )
 
 :Open_NetBIOS_UDP_138
@@ -711,7 +735,7 @@ ECHO.
 ECHO ---------------------------------------
 ECHO --------------【Port 138】---------------
 ECHO ---------------------------------------
-CALL :Is_Exist_Port_138 REM 檢查防火牆是否已有設置Port 138規則中
+CALL :Is_Exist_Port_138 REM Check Firewall Rule[Block Inbound Port 138] Exist
 IF %ERRORLEVEL% NEQ 0 (
 	ECHO.
 	PAUSE
@@ -720,7 +744,7 @@ IF %ERRORLEVEL% NEQ 0 (
 	SET ERRORLEVEL=
 )
 ECHO.
-ECHO 移除防火牆阻擋138輸入規則中...
+ECHO Remove Firewall Rule[Block Inbound Port 138]...
 ECHO.
 powershell -command Remove-NetFirewallRule -DisplayName "Block_UDP-138"
 IF %ERRORLEVEL% NEQ 0 (
@@ -729,27 +753,27 @@ IF %ERRORLEVEL% NEQ 0 (
 	IF %ERRORLEVEL% NEQ 0 (
 		ECHO.
 		netsh firewall delete portopening protocol=udp port=138
-		IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 設置失敗!)ELSE (ECHO. && ECHO 設置成功!)
+		IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO Setting Fail!)ELSE (ECHO. && ECHO Setting Success!)
 	)ELSE (
-		ECHO. && ECHO 設置成功!
+		ECHO. && ECHO Setting Success!
 	)
 )ELSE (
-	ECHO. && ECHO 設置成功!
+	ECHO. && ECHO Setting Success!
 )
 ECHO.
 PAUSE
 GOTO MAIN
 
 :Is_Exist_Port_137
-ECHO 檢查防火牆是否已有設置137規則中...
+ECHO Check Firewall Rule[Block Inbound Port 137] Exist...
 powershell -command Get-NetFirewallRule -DisplayName "Block_UDP-137" > nul 2>&1
-IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 確認不存在規則! && SET ERRORLEVEL=1)ELSE (ECHO. && ECHO 確認已經存在規則!) 
+IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO Confirm Rule is not Exist! && SET ERRORLEVEL=1)ELSE (ECHO. && ECHO Confirm Rule is Exist!) 
 EXIT /B
 
 :Is_Exist_Port_138
-ECHO 檢查防火牆是否已有設置138規則中...
+ECHO Check Firewall Rule[Block Inbound Port 138] Exist...
 powershell -command Get-NetFirewallRule -DisplayName "Block_UDP-138" > nul 2>&1
-IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO 確認不存在規則! && SET ERRORLEVEL=1)ELSE (ECHO. && ECHO 確認已經存在規則!)
+IF %ERRORLEVEL% NEQ 0 (ECHO. && ECHO Confirm Rule is not Exist! && SET ERRORLEVEL=1)ELSE (ECHO. && ECHO Confirm Rule is Exist!)
 EXIT /B
 
 ::REM ==================================================Check_TCP_UDP_Port=================================================
@@ -759,21 +783,25 @@ CLS
 ECHO.
 ECHO =======================================================
 ECHO.
-SET /P Check-Port="請輸入要監看的連接埠(輸入Q返回主選單;輸入E離開;不輸入顯示所有連接埠): "
+SET Check-Port=
+SET /P Check-Port="Please input port to check( [Q]Back Menu [E]Exit [A]Check All Port ): "
+IF "%Check-Port%"=="" (
+	ECHO. && ECHO Please input Port! && ECHO. && PAUSE && GOTO Check_TCP_UDP
+)
 IF /I "%Check-Port%" EQU "Q" (
 	GOTO MAIN
 )ELSE IF /I "%Check-Port%" EQU "E" (
 	GOTO Exit
-)ELSE IF "%Check-Port%" EQU "" (
+)ELSE IF /I "%Check-Port%" EQU "A" (
 	SET RUN=^| findstr LISTEN
 )ELSE (
-	SET RUN=^| findstr LISTEN ^| findstr "%Check-Port%"
+	SET RUN=^| findstr LISTEN ^| findstr %Check-Port%
 )
 ECHO.
-ECHO  協定    本機位址               外部位址               狀態            PID
+ECHO  Proto   Local address        Foreign address      State           PID
 netstat -ano %RUN%
 IF %ERRORLEVEL% NEQ 0 (
-	ECHO. && ECHO 目前沒有此連接埠 && ECHO. && PAUSE && GOTO Check_TCP_UDP
+	ECHO. && ECHO Current no this port! && ECHO. && PAUSE && GOTO Check_TCP_UDP
 )ELSE (
 	ECHO. && PAUSE && GOTO Check_TCP_UDP
 )
