@@ -5,10 +5,10 @@
 ### Language Version: 中文、English
 ________________________________________________________________________________________________________________
 
-<dl>
-	<dt>關閉NetBios步驟</dt>
-	``<dd>參考: https://github.com/hvs-consulting/disable-netbios/blob/main/disable_netbios.ps1</dd>``
-</dl>
+
+**關閉NetBios步驟**
+``<dd>參考: https://github.com/hvs-consulting/disable-netbios/blob/main/disable_netbios.ps1</dd>``
+
 
 <dl>
 	<dt>關閉[TCP]139 Port 步驟</dt>
