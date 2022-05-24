@@ -11,7 +11,7 @@ ________________________________________________________________________________
 
 
 
-關閉[TCP]139 Port 步驟
+關閉[TCP]139 Port 步驟\
     1. 將註冊表HKLM:\SYSTEM\CurrentControlSet\Control\Lsa當中的restrictanonymous值改成2
 	2. 關閉lmhosts服務，並設置成停用狀態。
 	3. 關閉netbios服務，並設置成停用狀態。
