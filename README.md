@@ -7,7 +7,7 @@ ________________________________________________________________________________
 
 
 **關閉NetBios步驟**\
-``參考: https://github.com/hvs-consulting/disable-netbios/blob/main/disable_netbios.ps1``
+`參考: https://github.com/hvs-consulting/disable-netbios/blob/main/disable_netbios.ps1`
 
 
 <dl>
