@@ -1,21 +1,30 @@
 ### Management RDP or RPC or SMB/CIFS port or Check TCP/UDP port state of connection using batch script.
+________________________________________________________________________________________________________________________________
 
 ### 介紹:
 **1.** 更換RDP遠端連接埠。</br>
 **2.** 關閉或開啟RPC 連接埠。</br>
-**3.** 關閉或開啟SMB/CIFS 連接埠 137、138(UDP)和139、445(TCP)。</br>
-**4.** 關閉或開啟SMBv1、SMBv2、SMBv3。</br>
-**5.** 檢查任一TCP/UDP連接埠狀態。
+**3.** 關閉或開啟NetBios。</br>
+**4.** 關閉或開啟SMB/CIFS 連接埠 137、138(UDP)和139、445(TCP)。</br>
+**5.** 關閉或開啟SMBv1、SMBv2、SMBv3。</br>
+**6.** 檢查任一TCP/UDP連接埠狀態。
 </br>
 
 ### Introduction:
 **1.** Change RDP port.</br>
 **2.** Close or Open RPC port.</br>
+**3.** Close or Open NetBios.</br>
 **3.** Close or Open SMB/CIFS port 137、138(UDP) and 139、445(TCP).</br>
 **4.** Close or Open SMBv1、SMBv2、SMBv3.</br>
 **5.** Check specifying TCP/UDP port ststus.
 </br>
+</br>
 
+## 免責聲明 (DISCLAIMER)
+- ***本產品處於實驗狀態，對於任何因使用本產品而導致或涉及的產品損失、損害或損害之故，概不承擔法律責任及賠償義務。***
+- ***This product is in experimental condition, and no liability or compensation will be accepted for any loss, damage or injury to the product caused by or related to the use of this product.***
+
+</br>
 ________________________________________________________________________________________________________________________________
 
 ### What is NetBIOS(Network Ba​​sic Input/Output System):
