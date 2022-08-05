@@ -20,7 +20,7 @@ ________________________________________________________________________________
 </br>
 </br>
 
-## 免責聲明 (DISCLAIMER)
+## 免責聲明(DISCLAIMER)
 - ***本產品處於實驗狀態，對於任何因使用本產品而導致或涉及的產品損失、損害或損害之故，概不承擔法律責任及賠償義務。***
 - ***This product is in experimental condition, and no liability or compensation will be accepted for any loss, damage or injury to the product caused by or related to the use of this product.***
 
